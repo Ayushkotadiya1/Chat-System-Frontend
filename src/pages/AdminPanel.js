@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaSignOutAlt, FaComments, FaUser, FaClock, FaPaperPlane } from 'react-icons/fa';
+import { FaSignOutAlt, FaComments, FaUser, FaClock, FaPaperPlane, FaArrowLeft } from 'react-icons/fa';
 import { chatAPI } from '../services/api';
 import adminSocketService from '../services/adminSocket';
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,6 +12,7 @@ const AdminPanel = () => {
   const selectedSession = useSelector((s) => s.chat.selectedSession);
   const messages = useSelector((s) => s.chat.messagesBySession[selectedSession?.session_id || '']) || [];
   const [activeTab, setActiveTab] = useState('active');
+  const [showListMobile, setShowListMobile] = useState(true); // controls list/chat visibility on small screens
   const aiEnabled = useSelector((s) => (selectedSession?.session_id ? s.chat.aiEnabledBySession[selectedSession.session_id] : false)) || false;
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -122,6 +123,8 @@ const AdminPanel = () => {
     } catch (error) {
       console.error('Error loading messages:', error);
     }
+    // On small screens, hide the list and show chat after selecting
+    setShowListMobile(false);
   };
 
   const handleToggleAi = async () => {
@@ -295,32 +298,32 @@ const AdminPanel = () => {
   console.log(groupedMessages);
   return (
     <div className="h-screen overflow-hidden bg-gray-100 flex flex-col">
-      <div className="bg-white px-8 py-4 border-b border-gray-200 flex items-center justify-between shadow-sm">
+      <div className="bg-white px-4 md:px-8 py-3 md:py-4 border-b border-gray-200 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
-          <FaComments className="text-2xl text-blue-600" />
-          <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
+          <FaComments className="text-xl md:text-2xl text-blue-600" />
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800">Admin Panel</h1>
         </div>
         <button
           onClick={handleLogout}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md font-medium"
+          className="inline-flex items-center gap-2 px-3 md:px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md font-medium"
         >
           <FaSignOutAlt />
-          <span>Logout</span>
+          <span className="hidden sm:inline">Logout</span>
         </button>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
         {/* Sessions List */}
-        <div className="w-[350px] bg-white border-r border-gray-200 flex flex-col overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-800">Chat Sessions</h2>
-            <span className="bg-blue-500 text-white px-3 py-0.5 rounded-full text-sm font-semibold">{sessions.length}</span>
+        <div className={`${showListMobile ? 'block' : 'hidden'} md:flex w-full md:w-[350px] bg-white border-b md:border-b-0 md:border-r border-gray-200 flex-col overflow-hidden`}> 
+          <div className="px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 flex items-center justify-between">
+            <h2 className="text-base md:text-lg font-semibold text-gray-800">Chat Sessions</h2>
+            <span className="bg-blue-500 text-white px-2.5 md:px-3 py-0.5 rounded-full text-xs md:text-sm font-semibold">{sessions.length}</span>
           </div>
-          <div className="px-4 pt-3 flex gap-2">
+          <div className="px-4 pt-3 flex flex-wrap gap-2">
             <button onClick={() => { setActiveTab('active'); loadSessions(); }} className={`px-3 py-1 rounded-full text-sm ${activeTab==='active' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}>Active</button>
             <button onClick={() => { setActiveTab('past'); loadSessions(); }} className={`px-3 py-1 rounded-full text-sm ${activeTab==='past' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}>Past</button>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 pt-2">
+          <div className="flex-1 overflow-y-auto p-3 md:p-4 pt-2">
             {sessions.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
                 <FaComments className="text-4xl text-gray-400 mb-2" />
@@ -337,7 +340,7 @@ const AdminPanel = () => {
                 >
                   {/* Top row: avatar + name + time */}
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm shrink-0">
+                    <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm shrink-0">
                       <FaUser />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -345,12 +348,12 @@ const AdminPanel = () => {
                         <span className="font-semibold text-gray-900 text-sm truncate">
                           {session.session_id.substring(0, 26)}...
                         </span>
-                        <span className="text-[11px] text-gray-500 whitespace-nowrap">
+                        <span className="text-[10px] md:text-[11px] text-gray-500 whitespace-nowrap">
                           {formatSidebarTime(session.last_message_at || session.created_at)}
                         </span>
                       </div>
                       {/* Last message preview */}
-                      <div className="text-xs text-gray-500 truncate">
+                      <div className="text-[11px] md:text-xs text-gray-500 truncate">
                         {session.last_message
                           ? `${session.last_sender_type === 'admin' ? 'You: ' : 'Customer: '}${session.last_message}`
                           : 'No messages yet'}
@@ -359,7 +362,7 @@ const AdminPanel = () => {
                   </div>
                   {/* Bottom meta: status and count */}
                   <div className="mt-2 flex items-center justify-between">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${getStatusBadge(session.status)}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] md:text-[10px] font-semibold ${getStatusBadge(session.status)}`}>
                       {session.status}
                     </span>
                     <div className="inline-flex items-center gap-1 text-xs text-gray-500">
@@ -374,26 +377,30 @@ const AdminPanel = () => {
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className={`${showListMobile ? 'hidden' : 'flex'} md:flex flex-1 flex-col overflow-hidden`}>
           {selectedSession ? (
             <>
-              <div className="px-6 py-3 bg-white border-b border-gray-200">
+              <div className="px-4 md:px-6 py-3 bg-white border-b border-gray-200">
                 <div className="flex items-center gap-3 min-w-0">
-                  <h3 className="font-semibold text-gray-800 whitespace-nowrap">Chat with Customer</h3>
-                  <span className="text-sm text-gray-500 truncate">
+                  {/* Back button for small screens */}
+                  <button onClick={() => setShowListMobile(true)} className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-700">
+                    <FaArrowLeft />
+                  </button>
+                  <h3 className="font-semibold text-gray-800 whitespace-nowrap text-sm md:text-base">Chat with Customer</h3>
+                  {showListMobile && <span className="text-xs md:text-sm text-gray-500 truncate">
                     {selectedSession.session_id}
-                  </span>
+                  </span>}
                   <div className="ml-auto flex items-center gap-2">
                     {/* Device info chips */}
-                    <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[11px]">IP: {selectedSession.user_ip || 'n/a'}</span>
-                    <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[11px] max-w-[220px] truncate" title={selectedSession.user_agent || ''}>Agent: {selectedSession.user_agent || 'n/a'}</span>
+                    <span className="hidden sm:inline px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[11px]">IP: {selectedSession.user_ip || 'n/a'}</span>
+                    <span className="hidden lg:inline px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[11px] max-w-[220px] truncate" title={selectedSession.user_agent || ''}>Agent: {selectedSession.user_agent || 'n/a'}</span>
                     {/* AI toggle pill button */}
                     <button onClick={handleToggleAi} className={`px-3 py-1 rounded-full text-[12px] font-medium border ${aiEnabled ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300'} hover:opacity-90`}>{aiEnabled ? 'AI ON' : 'AI OFF'}</button>
                   </div>
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-5 bg-[length:18px_18px] bg-[radial-gradient(transparent_16px,rgba(59,130,246,0.06)_17px)]">
+              <div className="flex-1 overflow-y-auto p-3 md:p-5 bg-[length:18px_18px] bg-[radial-gradient(transparent_16px,rgba(59,130,246,0.06)_17px)]">
                 {messages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center">
                     <FaComments className="text-4xl text-gray-400 mb-2" />
@@ -420,7 +427,7 @@ const AdminPanel = () => {
                         key={msg.id}
                         className={`mb-2 flex ${isAdmin ? 'justify-end' : 'justify-start'}`}
                       >
-                        <div className={`flex items-end gap-2 max-w-[78%] ${isAdmin ? 'flex-row-reverse' : ''}`}>
+                        <div className={`flex items-end gap-2 max-w-[92%] md:max-w-[78%] ${isAdmin ? 'flex-row-reverse' : ''}`}>
                           {/* Avatar */}
                           <div className={`w-7 h-7 rounded-full ${isAdmin ? 'bg-blue-500 text-white' : 'bg-gray-300'} flex items-center justify-center text-[11px]`}>
                             <FaUser />
@@ -441,7 +448,7 @@ const AdminPanel = () => {
                             { hasAttachment ? (
                               ((msg.attachment_type || msg.attachmentType) || '').startsWith('image') ? (
                                 <a href={(msg.attachment_url || msg.attachmentUrl)} target="_blank" rel="noreferrer" className="block">
-                                  <img src={(msg.attachment_url || msg.attachmentUrl)} alt="attachment" className="max-w-[280px] rounded-xl border border-gray-200" />
+                                  <img src={(msg.attachment_url || msg.attachmentUrl)} alt="attachment" className="w-full md:max-w-[280px] rounded-xl border border-gray-200" />
                                   <span className="block mt-1 text-[10px] text-gray-500 text-right">{formatTime(msg.created_at || msg.timestamp)}</span>
                                 </a>
                               ) : (
