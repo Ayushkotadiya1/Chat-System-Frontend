@@ -1,6 +1,6 @@
 import io from 'socket.io-client';
 
-const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5001';
+const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 'https://chat-system-backend-xn79.onrender.com';
 
 class SocketService {
   constructor() {

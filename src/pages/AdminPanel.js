@@ -246,7 +246,7 @@ const AdminPanel = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-900 to-blue-800 flex items-center justify-center p-6">
+      <div className="h-[100dvh] h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-900 to-blue-800 flex items-center justify-center p-6">
         {/* Animated gradient orbs */}
         <div className="absolute -top-24 -left-24 w-72 h-72 bg-blue-500/30 blur-3xl rounded-full animate-pulse" />
         <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-indigo-500/30 blur-3xl rounded-full animate-pulse [animation-delay:300ms]" />
@@ -297,7 +297,7 @@ const AdminPanel = () => {
   }
   console.log(groupedMessages);
   return (
-    <div className="h-screen overflow-hidden bg-gray-100 flex flex-col">
+    <div className="h-[100dvh] h-screen overflow-hidden bg-gray-100 flex flex-col">
       <div className="bg-white px-4 md:px-8 py-3 md:py-4 border-b border-gray-200 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <FaComments className="text-xl md:text-2xl text-blue-600" />

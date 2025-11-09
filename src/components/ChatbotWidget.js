@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { FaComments, FaTimes, FaPaperPlane, FaUser, FaRobot, FaCircle } from 'react-icons/fa';
 import socketService from '../services/socket';
-import { publicChatAPI } from '../services/api';
 import { chatAPI } from '../services/api';
 
 const ChatbotWidget = () => {
@@ -58,6 +57,7 @@ const ChatbotWidget = () => {
       });
 
       socket.on('message:sent', (message) => {
+        console.log('message:sent', message);
         setMessages((prev) => [...prev, message]);
         scrollToBottom();
       });
@@ -89,7 +89,7 @@ const ChatbotWidget = () => {
     const loadHistory = async () => {
       try {
         if (!sessionId) return;
-        const res = await publicChatAPI.getSessionMessages(sessionId);
+        const res = await chatAPI.getSessionMessages(sessionId);
         const history = (res.data || []).map((m) => ({
           sessionId: m.session_id,
           message: m.message,
@@ -125,6 +125,23 @@ const ChatbotWidget = () => {
       scrollToBottom();
     }
   }, [isOpen, isTyping]);
+
+  // Lock body scroll when chat is open on mobile
+  useEffect(() => {
+    if (isOpen) {
+      // Prevent body scroll on mobile
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      // Restore body scroll
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [isOpen]);
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -235,9 +252,9 @@ const ChatbotWidget = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-0 right-0 w-full h-screen sm:bottom-5 sm:right-5 sm:w-[380px] sm:h-[600px] bg-white rounded-none sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden z-[1001]">
+        <div className="fixed inset-0 sm:bottom-5 sm:right-5 sm:left-auto sm:top-auto sm:w-[380px] sm:h-[600px] sm:rounded-2xl w-full h-[100dvh] bg-white rounded-none shadow-2xl flex flex-col overflow-hidden z-[1001]">
           {/* Header */}
-          <div className="px-5 py-3 bg-emerald-600 text-white flex items-center justify-between">
+          <div className="px-5 py-3 bg-emerald-600 text-white flex items-center justify-between safe-area-inset-top" style={{ paddingTop: `calc(0.75rem + env(safe-area-inset-top, 0px))` }}>
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
                 <FaRobot />
@@ -351,7 +368,7 @@ const ChatbotWidget = () => {
           </div>
 
           {/* Input */}
-          <form onSubmit={handleSendMessage} className="flex gap-2 p-3 bg-white border-t border-gray-200">
+          <form onSubmit={handleSendMessage} className="flex gap-2 p-3 bg-white border-t border-gray-200 safe-area-inset-bottom" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom, 0px))` }}>
             <input ref={fileInputRef} type="file" className="hidden" onChange={onFileSelected} />
             <button type="button" onClick={onPickFile} className="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center">
               📎
